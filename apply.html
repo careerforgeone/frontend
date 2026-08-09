@@ -642,22 +642,60 @@
   // If you host the frontend separately from the backend, set this to your Render service URL.
   const API_BASE = 'https://careerforge-api-i1v3.onrender.com';
 
-  async function postJSON(path, data, successEl, form){
-    try{
-      const res = await fetch(API_BASE + path, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data)
-      });
-      if(!res.ok) throw new Error('Request failed');
-      if(successEl) successEl.classList.add('show');
-      if(form) form.reset();
-      return true;
-    }catch(err){
-      alert('Something went wrong submitting the form — please try again or email hello@careerforge.example.');
-      return false;
+  //async function postJSON(path, data, successEl, form){
+  //  try{
+    //  const res = await fetch(API_BASE + path, {
+    //    method: 'POST',
+    //    headers: { 'Content-Type': 'application/json' },
+   //     body: JSON.stringify(data)
+    //  });
+    //  if(!res.ok) throw new Error('Request failed');
+    //  if(successEl) successEl.classList.add('show');
+    //  if(form) form.reset();
+   //   return true;
+   // }catch(err){
+    //  alert('Something went wrong submitting the form — please try again or email hello@careerforge.example.');
+    //  return false;
+   // }
+ // }
+async function postJSON(path, data, successEl, form) {
+    try {
+        const res = await fetch(API_BASE + path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        });
+
+        // Handle duplicate application
+        if (res.status === 409) {
+            const errorData = await res.json();
+
+            alert(
+                errorData.detail ||
+                'You have already submitted an application for this track.'
+            );
+
+            return false;
+        }
+
+        // Handle other errors
+        if (!res.ok) {
+            throw new Error('Request failed');
+        }
+
+        // Existing success behaviour
+        if (successEl) successEl.classList.add('show');
+        if (form) form.reset();
+
+        return true;
+
+    } catch (err) {
+        alert(
+            'Something went wrong submitting the form — please try again or email careerforgeanalytics@gmail.com.'
+        );
+        return false;
     }
-  }
+}
 
   // multipart submit — used by the apply form since Internship applications include a CV file
   async function postFormData(path, formData, successEl, form){
