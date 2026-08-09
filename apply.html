@@ -658,15 +658,45 @@
     //  return false;
    // }
  // }
+const API_BASE = 'https://careerforge-api-i1v3.onrender.com';
+
 async function postJSON(path, data, successEl, form) {
+    // Find the submit button for this form
+    const submitButton = form
+        ? form.querySelector('button[type="submit"], input[type="submit"]')
+        : null;
+
+    // Prevent accidental multiple submissions
+    if (form && form.dataset.submitting === 'true') {
+        return false;
+    }
+
+    // Lock the form
+    if (form) {
+        form.dataset.submitting = 'true';
+    }
+
+    // Save the original button text
+    const originalButtonText = submitButton
+        ? submitButton.textContent
+        : '';
+
+    // Immediately give the user feedback
+    if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = 'Submitting...';
+    }
+
     try {
         const res = await fetch(API_BASE + path, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify(data)
         });
 
-        // Handle duplicate application
+        // Duplicate application
         if (res.status === 409) {
             const errorData = await res.json();
 
@@ -678,22 +708,42 @@ async function postJSON(path, data, successEl, form) {
             return false;
         }
 
-        // Handle other errors
+        // Other HTTP errors
         if (!res.ok) {
             throw new Error('Request failed');
         }
 
-        // Existing success behaviour
-        if (successEl) successEl.classList.add('show');
-        if (form) form.reset();
+        // Successful submission
+        if (successEl) {
+            successEl.classList.add('show');
+        }
+
+        if (form) {
+            form.reset();
+        }
 
         return true;
 
     } catch (err) {
+        console.error('Application submission error:', err);
+
         alert(
-            'Something went wrong submitting the form — please try again or email careerforgeanalytics@gmail.com.'
+            'Something went wrong submitting the form — please try again or email hello@careerforge.example.'
         );
+
         return false;
+
+    } finally {
+        // Unlock the form
+        if (form) {
+            form.dataset.submitting = 'false';
+        }
+
+        // Restore button
+        if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.textContent = originalButtonText || 'Submit';
+        }
     }
 }
 
@@ -706,7 +756,7 @@ async function postJSON(path, data, successEl, form) {
       if(form) form.reset();
       return true;
     }catch(err){
-      alert('Something went wrong submitting the form — please try again or email hello@careerforge.example.');
+      alert('Something went wrong submitting the form — please try again or email careerforgeanalytics@gmail.com.');
       return false;
     }
   }
